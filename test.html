@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTTP Requester</title>
+</head>
+<body>
+
+<!-- The Form -->
+<div>
+    <input type="text" id="url" placeholder="Enter URL">
+    
+    <select id="requestType">
+        <option value="GET">GET</option>
+        <option value="POST">POST</option>
+    </select>
+    
+    <button onclick="makeRequest()">Execute Request</button>
+</div>
+
+<!-- The Results -->
+<div>
+    <h3>Results:</h3>
+    <pre id="results"></pre>
+</div>
+
+<script>
+function makeRequest() {
+    const url = document.getElementById('url').value;
+    const requestType = document.getElementById('requestType').value;
+    const resultsDiv = document.getElementById('results');
+
+    // Use Fetch API to make the request
+    fetch(url, { method: requestType })
+        .then(response => response.text())
+        .then(data => {
+            resultsDiv.textContent = data;
+        })
+        .catch(error => {
+            resultsDiv.textContent = 'Error: ' + error.message;
+        });
+}
+</script>
+
+</body>
+</html>

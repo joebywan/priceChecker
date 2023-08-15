@@ -1,7 +1,3 @@
-# Pricechecker
-This is to check pricing of items online, in an automated fashion on AWS serverless services.
-
-**INCOMPLETE**
 # TODO
 
 ## Data schema
