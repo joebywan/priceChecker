@@ -5,39 +5,25 @@ This is to check pricing of items online, in an automated fashion on AWS serverl
 # TODO
 
 ## Data schema
+```
 {
-
     'item':{'S':'Dell S3423CDW Monitor'},
-
     'current_value':{'S':'$697.40'},
-
     'sellers':[
-
         {
-
             'name':{'S':'Dell'},
-            
             'url':{'S':'https://www.dell.com/en-au/shop/dell-34-curved-usb-c-monitor-s3423dwc/apd/210-beic/monitors-monitor-accessories'},
-
             'selector':{'S':'div.smart-popover-btn'}
-
             'minimum_price':{'S':'$697.40'},
-
             'current_price':{'S':'1.0'}
-
         }
-
     ]
-
     'subscribers':[
-
         'email1',
-
         'email2'
-
     ]
-    
 }
+```
 
 ## Functions
 ### Database
