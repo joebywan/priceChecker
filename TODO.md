@@ -38,6 +38,8 @@
     * Lambda_handler function to be invoked by lambda.  Will decide on which function to use based on the route_key.  Still need to decide on names for each.
 * Create response back to the user
     * Mainly used to standardise the responnses back through API Gateway.  Adding requisite headers and status codes etc.
+* Add error handling?  Have them raised up to here?
+
 
 ### SNS
 * Create SNS Topic **Implemented**
