@@ -7,8 +7,8 @@
 import requests
 from bs4 import BeautifulSoup
 import logging  # FUCKING USE ME
-from logging_configuration import configure_logging
-configure_logging()
+import configuration
+configuration.configure_logging()
 
 # Check the URL, search using BS & return the value.
 def get_current_price(web_address,search_term):
@@ -74,7 +74,7 @@ def convert_to_int(value):
 # -----------------------------------------------------------------------------
 # Tests - Make sure it works TBC
 # -----------------------------------------------------------------------------
-def test_prices():
+def testing():
     web_address="COMPLETE ME"
     search_term="COMPLETE ME"
     get_current_price(web_address,search_term)
@@ -84,4 +84,4 @@ def test_prices():
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    test_prices()
+    testing()

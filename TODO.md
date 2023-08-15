@@ -12,30 +12,25 @@
             'minimum_price':{'S':'$697.40'},
             'current_price':{'S':'1.0'}
         }
-    ]
-    'subscribers':[
-        'email1',
-        'email2'
-    ]
 }
 
 ## Functions
 ### Database
-* Get all items /get_items *Implemented*
+* Get all items /get_items  **Implemented**
     * Grab all items from DynamoDB and return the list of dict
-* Get 1 item /get_item/{item} *Implemented*
+* Get 1 item /get_item/{item}  **Implemented**
     * Uses Boto3 to pull only the item
-* Add item /add_item  *Implemented*
+* Add item /add_item   **Implemented**
     * Supplied with the info from the schema, adds an item to the DynamoDB database
-* Update item /update_item  *Implemented*
+* Update item /update_item   **Implemented**
     * Supplied with the item or some filter, update an item
-* Delete item /delete_item/{item}  *Implemented*
+* Delete item /delete_item/{item}   **Implemented**
     * Supplied with the item or some filter, delete an item
 
 ### Web scraping/prices
-* Get 1 price /check_price/{item} *Implemented*
+* Get 1 price /check_price/{item}  **Implemented**
     * Supplied with url, current_value, selector.  Gets the url, parses it with beautifulsoup and returns the current price
-* check_all_prices /check_prices/ *Implemented*
+* check_all_prices /check_prices/  **Implemented**
     * Use 'Get all items' and using a loop invokes the 'Get 1 price' function for each item
 
 ### Lambda
@@ -45,13 +40,14 @@
     * Mainly used to standardise the responnses back through API Gateway.  Adding requisite headers and status codes etc.
 
 ### SNS
-* Create SNS Topic
-    * Will need this for when a new item is added, so will have to call it from the add_item function.  Now that I'm at this point, it's definitely going to differentiate the add_item from replace_item, as replace_item won't require the SNS modifications.  I read that SNS has a limit of 100,000 SNS topics per account, so I should monitor how many are in the account after each one's created, and if it's 50,000 or more, I should look at coding up SES or an alternative, if I can do it cheaper than SES
-* Delete SNS Topic
+* Create SNS Topic **Implemented**
+    * Will need this for when a new item is added, so will have to call it from/along with the add_item function.  Now that I'm at this point, it's definitely going to differentiate the add_item from replace_item, as replace_item won't require the SNS modifications.  I read that SNS has a limit of 100,000 SNS topics per account, so I should monitor how many are in the account after each one's created, and if it's 50,000 or more, I should look at coding up SES or an alternative, if I can do it cheaper than SES
+* Delete SNS Topic **Implemented**
     * When deleting an item, the associated topic will need to be deleted.  
-* Send SNS Message
+* Send SNS Message **Implemented**
     * Will need to send an SNS message to the topic when an item shows a lower price than the last detected current_price.
-* Will have to work out an unsubscribe function, or atleast see if SNS communications have an unsubscribe link in if it's via email.
+* Subscribe to Topic  **Implemented**
+    * Don't need an unsubscribe function, or atleast see if SNS communications have an unsubscribe link in if it's via email.
 
 ### Logic
 This is where the tying things together will occur.

@@ -6,8 +6,8 @@
 
 import boto3
 import logging
-from logging_configuration import configure_logging
-configure_logging()
+import configuration
+configuration.configure_logging()
 
 # -----------------------------------------------------------------------------
 # Database client
@@ -28,9 +28,9 @@ def database_connection(table_name):
 
 # Requests all records from the database, returns just the items without
 # the table search metadata
-def get_all_items(db_client):
+def get_all_items(db_resource):
     try:
-        response = db_client.scan()
+        response = db_resource.scan()
         logging.debug("----- Debug output -----\n" +
                       "Response returned:\n" +
                       f"{response}\n" +
@@ -46,9 +46,9 @@ def get_all_items(db_client):
         raise SystemExit(f'Error: {e}')
 
 # Requests a single record from the database
-def get_item(db_client, item_name):
+def get_item(db_resource, item_name):
     try:
-        response = db_client.get_item(Key={'item': item_name})
+        response = db_resource.get_item(Key={'item': item_name})
         if 'Item' in response:
             return response['Item']
         else:
@@ -66,14 +66,14 @@ def get_item(db_client, item_name):
 # NOTE: Should probably do testing for correct item structure & 
 # minimum information required.
 # NOTE: Will fail if the item already exists. Might be worth a force option?
-def add_item(db_client, new_item):
+def add_item(db_resource, new_item):
     try:
-        return db_client.put_item(
+        return db_resource.put_item(
             Item=new_item,
             ConditionExpression="attribute_not_exists(#itemAttr)",
             ExpressionAttributeNames={"#itemAttr": "item"}
         )
-    except db_client.meta.client.exceptions.ConditionalCheckFailedException:
+    except db_resource.meta.client.exceptions.ConditionalCheckFailedException:
         logging.error(f'Error: Item {new_item["item"]} already exists.')
         raise SystemExit(f'Error: Item {new_item["item"]} already exists.')
     except Exception as e:
@@ -83,9 +83,9 @@ def add_item(db_client, new_item):
 # -----------------------------------------------------------------------------
 # Delete item function - Item creation
 # -----------------------------------------------------------------------------
-def delete_item(db_client, item_name):
+def delete_item(db_resource, item_name):
     try:
-        return db_client.delete_item(Key={'item': item_name})
+        return db_resource.delete_item(Key={'item': item_name})
     except Exception as e:
         raise SystemExit(f'Error deleting item: {e}')
 
@@ -97,8 +97,8 @@ def delete_item(db_client, item_name):
 #     'current_price': '2.0',
 #     'selector': 'new_search_parameters'
 # }
-# update_item(db_client, 'Test_Item1234567890', updated_values)
-def update_item(db_client, item_name, updated_attributes):
+# update_item(db_resource, 'Test_Item1234567890', updated_values)
+def update_item(db_resource, item_name, updated_attributes):
     try:
         update_expression_parts = []
         expression_attribute_values = {}
@@ -109,7 +109,7 @@ def update_item(db_client, item_name, updated_attributes):
 
         update_expression = "SET " + ", ".join(update_expression_parts)
         
-        db_client.update_item(
+        db_resource.update_item(
             Key={'item': item_name},
             UpdateExpression=update_expression,
             ExpressionAttributeValues=expression_attribute_values
@@ -119,15 +119,15 @@ def update_item(db_client, item_name, updated_attributes):
         raise SystemExit(f'Error updating item: {e}')
 
 # Identical to add_item(), except it's able to overwrite existing items
-def replace_item(db_client, item):
+def replace_item(db_resource, item):
     try:
-        return db_client.put_item(Item=item)
+        return db_resource.put_item(Item=item)
     except Exception as e:
         raise SystemExit(f'Error adding/updating item: {e}')
 # -----------------------------------------------------------------------------
 # Tests - Make sure it works
 # -----------------------------------------------------------------------------
-def test_database(table_name):
+def testing(table_name):
     new_item = {
         'item':'Test_Item1234567890',
         'current_price':'1.0',
@@ -139,10 +139,6 @@ def test_database(table_name):
                 'min_price':'1.0',
                 'current_price':'1.0'
             }
-        ],
-        'subscribers':[
-            'email1@test.com',
-            'email2@test.ccom',
         ]
     }
     add_item(table_name,new_item)
@@ -154,4 +150,4 @@ def test_database(table_name):
 # Main - When the file's called direct, do testing
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
-    test_database(database_connection("check_prices"))
+    testing(database_connection("check_prices"))
