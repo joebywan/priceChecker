@@ -26,21 +26,19 @@ resource "aws_cloudwatch_log_group" "api_gateway" {
 # Create a /{check_price} resource for checking a price
 # -----------------------------------------------------------------------------
 
-
-# Create a /check_price route from the api to the backend integration
-resource "aws_apigatewayv2_route" "check_price" {
-    api_id    = aws_apigatewayv2_api.this.id
-    route_key = "POST /check_price"
-    target    = "integrations/${aws_apigatewayv2_integration.check_price.id}"
+# List of the route keys
+locals {
+    route_keys = ["check_price","add_item","delete_item","update_item","replace_item","subscribe_to_item"]
 }
 
-# Create a GET integration for /animal
-resource "aws_apigatewayv2_integration" "check_price" {
-    api_id                 = aws_apigatewayv2_api.this.id
-    integration_type       = "AWS_PROXY"
-    integration_uri        = aws_lambda_function.this.invoke_arn
-    integration_method     = "POST"
-    payload_format_version = "2.0"
+# Make a path/route/endpoint for each route key provided above.  It's all 
+# pointing to the same lambda anyway, so just needs to change the key
+module "apigw_route_check_price" {
+    source = "./apigw_route_integration"
+    for_each = toset(local.route_keys)
+    apigw_id = aws_apigatewayv2_api.this.id
+    integration_uri = aws_lambda_function.this.invoke_arn
+    route_key = "POST /${each.value}"
 }
 
 # Create the API Gateway deployment

@@ -9,13 +9,13 @@ configuration.configure_logging()
 import helpers
 
 # Create topic.  Need a topic per item.  Returns the ARN of the newly created topic
-def create_sns_topic(topic_name,item_name):
-    return boto3.resource('sns',region_name=helpers.get_region_from_arn(topic_arn)).create_topic(
-        Name=topic_name,
+def create_sns_topic(item_name, region = configuration.default_region):
+    return boto3.resource('sns',region_name=region).create_topic(
+        Name=item_name,
         Tags=[
             {
                 'Key': 'Name',
-                'Value': topic_name,
+                'Value': item_name,
             },
             {
                 'Key':'Project',
@@ -63,9 +63,9 @@ def send_notification(topic_arn,item_name,item_url,item_price):
         raise Exception(error_message)
 
 # Delete a topic.
-def subscribe_email_to_sns_topic(topic_arn):
+def delete_topic(topic_arn):
     try:
-        # Subscribe the email to the specified topic
+        # Delete the specified topic
         response = boto3.resource('sns', region_name=helpers.get_region_from_arn(topic_arn)).Topic(topic_arn).delete()
         logging.info(f"Successfully deleted topic: {topic_arn}")
         return True
@@ -74,7 +74,7 @@ def subscribe_email_to_sns_topic(topic_arn):
         logging.error(error_message)
         raise Exception(error_message)
 
-def testing:
+def testing():
     print("WRITE THE TESTS")
     
 if __name__ == '__main__':

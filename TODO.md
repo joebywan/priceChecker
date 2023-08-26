@@ -16,8 +16,10 @@
 
 ## Functions
 ### Database
-* Get all items /get_items  **Implemented**
+* Get all items **Implemented**
     * Grab all items from DynamoDB and return the list of dict
+* Get all item names /get_item_names  **Implemented**
+    * Grab all item names from DynamoDB and return the list of dict.  Don't want to expose the Get all items function above externally to avoid unneeded data download.
 * Get 1 item /get_item/{item}  **Implemented**
     * Uses Boto3 to pull only the item
 * Add item /add_item   **Implemented**
@@ -59,6 +61,14 @@ Will have to figure this out as I flesh out the rest.
 
 ### Eventbridge
 I was suggested to have a seperate Eventbridge function, it'll be using the existing functions, but just setup for Eventbridge to call it incase there's any unique logic required there.
+
+## Endpoints for API  **Needs testing, TF code written**
+/add_item - Supply an item, creates a sns topic, then the item in dynamodb
+/delete_item - Deletes the SNS topic and the item
+/update_item - Modifies an item
+/replace_item - Replaces an item with a full item object
+/check_price - Initiate a price check, return the current price
+/subscribe_to_item - Supply an item name and an email, it'll lookup the sns, and subscribe.  Still requires email verification.
 
 # Remaining
 Get 'er done?!?!
