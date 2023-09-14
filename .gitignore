@@ -43,3 +43,6 @@ lambda_package
 
 # Ignore ruff cache
 .ruff_cache
+
+# Ignore python build env
+priceChecker/

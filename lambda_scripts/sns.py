@@ -2,11 +2,14 @@
 # SNS functions - All about those notifications
 # -----------------------------------------------------------------------------
 
+# Lint exceptions
+# ruff: noqa: E501
+
 import boto3
 import logging
+import helpers
 import configuration
 configuration.configure_logging()
-import helpers
 
 # Create topic.  Need a topic per item.  Returns the ARN of the newly created topic
 def create_sns_topic(item_name, region = configuration.default_region):
@@ -66,7 +69,7 @@ def send_notification(topic_arn,item_name,item_url,item_price):
 def delete_topic(topic_arn):
     try:
         # Delete the specified topic
-        response = boto3.resource('sns', region_name=helpers.get_region_from_arn(topic_arn)).Topic(topic_arn).delete()
+        boto3.resource('sns', region_name=helpers.get_region_from_arn(topic_arn)).Topic(topic_arn).delete()
         logging.info(f"Successfully deleted topic: {topic_arn}")
         return True
     except Exception as e:

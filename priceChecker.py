@@ -1,69 +1,43 @@
-# Original script, deprecated in favour of serverless structure.  Will work on it's own, but not with the api/lambda/dynamodb structure
-
 import requests
 from bs4 import BeautifulSoup
-import os
-
-# Future notes
-# Could use in lambda with API gateway & eventbridge with SNS.
-# Output current price to console which would show up in logs, but if a new price is detected, send an email via SNS
-# Use API Gateway to expose the ability to add new dynamodb items containing url:<url>,CURRENT_VALUE: <CURRENT_VALUE>,selector: <selector>
-# Then loop through all dynamodb items.  This'd likely need more fields like a name/description to use when sending emails, but then
-# it'd be usable for checking multiple sites and emailing if any of them change.
-# Can also check the price, and track the max price, but email if the price goes low.
-
-
-# Beautifulsoup documentation: https://www.crummy.com/software/BeautifulSoup/bs4/doc/ Need this for the SELECTOR syntax
 
 # Dell S3423CDW
 SEARCH_ITEMS = [
     {
-        'URL' : 'https://www.dell.com/en-au/shop/dell-34-curved-usb-c-monitor-s3423dwc/apd/210-beic/monitors-monitor-accessories',
-        'CURRENT_VALUE' : '$697.40',
-        'SELECTOR' : 'div.smart-popover-btn'
+        'URL': 'https://www.dell.com/en-au/shop/dell-34-curved-usb-c-monitor-s3423dwc/apd/210-beic/monitors-monitor-accessories',
+        'CURRENT_VALUE': '$697.40',
+        'SELECTOR': 'div.smart-popover-btn'
     },
     {
-        'URL' : 'https://www.umart.com.au/product/aoc-34in-wqhd-va-144hz-freesync-curved-gaming-monitor-cu34g2x-54626',
-        'CURRENT_VALUE' : '529.0',
-        'SELECTOR' : 'span[itemprop="price"].goods-price'
+        'URL': 'https://www.umart.com.au/product/aoc-34in-wqhd-va-144hz-freesync-curved-gaming-monitor-cu34g2x-54626',
+        'CURRENT_VALUE': '529.0',
+        'SELECTOR': 'span[itemprop="price"].goods-price'
     }
 ]
 
-# retrieve all dynamodb items, and put them into a dictionary usable to check each of them
-
-
-# Umart test for different website
 def check_all_items():
     for item in SEARCH_ITEMS:
-        check_price_change(item['URL'],item['CURRENT_VALUE'],item['SELECTOR'])
+        check_price_change(item['URL'], item['CURRENT_VALUE'], item['SELECTOR'])
 
-
-
-def create_response(body, status_code):
-    print("---- This is the body of the response ----")
-    print(body)
-    print("---- body end ----")
-    return {
-        'statusCode': status_code,
-        'body': json.dumps(body) if not isinstance(body, str) else body,
-        'headers': {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Headers': 'Content-Type',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'OPTIONS,POST'
-        }
-    }
-
-def lambda_handler(event, context):
-    db = os.environ['table_name']   # Pull the DynamoDB name from the environment variable "table_name"
-    print("----- EVENT FROM LAMBDA -----")
-    print(event)
-    price_check = check_price_change()
-    print("----- PRICE_CHECK RESULT -----")
-    print(price_check)
-    return create_response(price_check, 200)
+def check_price_change(url, current_value, selector):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # will raise an HTTPError if the HTTP request returned an unsuccessful status code
+        soup = BeautifulSoup(response.text, 'html.parser')
+        value_element = soup.select_one(selector)
+        if value_element:
+            new_value = value_element.text.strip()
+            if new_value != current_value:
+                print(f"Price Change Alert for {url}")
+                print(f"The price has changed from {current_value} to {new_value}.")
+            else:
+                print(f"No change in price for {url}.")
+        else:
+            print(f"Could not find the price element for {url} using the selector: {selector}.")
+    except requests.HTTPError as http_err:
+        print(f"HTTP error occurred for {url}: {http_err}")
+    except Exception as err:
+        print(f"Error occurred for {url}: {err}")
 
 if __name__ == '__main__':
-    db = "check_prices"
     check_all_items()
-    get_all_items()

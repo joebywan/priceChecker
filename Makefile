@@ -8,18 +8,21 @@ init:
 	# Check if virtual environment already exists. If not, create it.
 	[ ! -d "./priceChecker" ] && python3 -m venv priceChecker || true
 
-	. priceChecker/bin/activate && \ # Activate the virtual environment
-	pip3 install -r requirements.txt && \ # Install dependencies
-	pip3 install ruff pylint bandit && \ # Install shift-left scanners
+	# Activate the virtual environment, install dependencies & then shift-left scanners.
+	. priceChecker/bin/activate && \
+	pip3 install -r requirements.txt && \
+	pip3 install ruff pylint bandit
 
-	terraform init # Initialise Terraform
+	# Initialise Terraform
+	terraform init
 
 	# Clean out old build & setup new lambda package build
 	[ -d ./lambda_package ] && rm -rf ./lambda_package || true
 	[ -d ./lambda_function.zip ] && rm -rf ./lambda_function.zip || true
 	mkdir ./lambda_package
 	pip3 install -r requirements.txt -t ./lambda_package
-	cp priceChecker.py ./lambda_package # Need to update once rewrite is complete
+	# Need to update once rewrite is complete
+	cp ./lambda_scripts/*.py ./lambda_package/
 
 plan: checkvars init lint test
 	terraform plan
@@ -35,9 +38,12 @@ autoapply: checkvars init lint test
 
 destroy: checkvars 
 	terraform destroy # Blow it all away.  Requires user input.
-	[ -d ./lambda_package ] && rm -rf ./lambda_package || true # If the directory exists, remove it
-	[ -d ./lambda_function.zip ] && rm -rf ./lambda_function.zip || true # If the archive exists, remove it
-	[ -d ./priceChecker ] && rm -rf ./priceChecker || true # Removes the virtual environment
+	# If the directory exists, remove it
+	[ -d ./lambda_package ] && rm -rf ./lambda_package || true
+	# If the archive exists, remove it
+	[ -d ./lambda_function.zip ] && rm -rf ./lambda_function.zip || true
+	# Removes the virtual environment
+	[ -d ./priceChecker ] && rm -rf ./priceChecker || true
 
 checkvars:
 	# Check that the AWS_PROFILE variable has been set
@@ -46,10 +52,10 @@ checkvars:
 lint:
 	# Run the linters over the scripts directory
 	. priceChecker/bin/activate && \
-	pylint ./lambdaScripts/* || exit 1 && \ # https://pypi.org/project/pylint/
-	bandit -r ./lambdaScripts/ || exit 1 && \ # https://bandit.readthedocs.io
-	ruff ./lambdaScripts/* || exit 1 # https://github.com/astral-sh/ruff
+	pylint ./lambda_scripts/* || exit 1 && \ # https://pypi.org/project/pylint/
+	bandit -r ./lambda_scripts/ || exit 1 && \ # https://bandit.readthedocs.io
+	ruff check ./lambda_scripts/* || exit 1 # https://github.com/astral-sh/ruff
 
-	test:
+test:
 	# Implement testing using the virtual environment.
-	. priceChecker/bin/activate && python3 ./lambdaScripts/items.py
+	. priceChecker/bin/activate && python3 ./lambda_scripts/items.py
